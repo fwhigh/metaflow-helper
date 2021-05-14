@@ -18,7 +18,7 @@ DESCRIPTION = 'Convenience utilities for common machine learning tasks on Metafl
 URL = 'https://github.com/fwhigh/metalearn'
 EMAIL = 'fwhigh@gmail.com'
 AUTHOR = 'F. William High'
-REQUIRES_PYTHON = '>=3.7.0'
+REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.0.1'
 LICENSE = 'Apache-2.0'
 
