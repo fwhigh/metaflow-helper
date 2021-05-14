@@ -25,4 +25,4 @@ package:
 test:
 	pip install -r test-requirements.txt
 	coverage run --omit 'venv/*' -m pytest
-	coverage html
+	coverage html -i
