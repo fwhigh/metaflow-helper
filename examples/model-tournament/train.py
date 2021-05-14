@@ -7,7 +7,7 @@ from sklearn.metrics import r2_score
 import config
 import common
 
-from metalearn.constants import RunMode
+from metaflow_helper.constants import RunMode
 
 
 class Train(FlowSpec):

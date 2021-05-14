@@ -8,7 +8,7 @@ help:
 	@echo "	 test	run all tests with coverage"
 
 clean:
-	rm -rf dist/*
+	rm -rf dist build *.egg-info .pytest_cache htmlcov
 
 dev:
 	pip install --upgrade pip

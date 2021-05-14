@@ -1,5 +1,5 @@
-import metalearn
+import metaflow_helper
 
 
 def test_import():
-    assert metalearn
+    assert metaflow_helper

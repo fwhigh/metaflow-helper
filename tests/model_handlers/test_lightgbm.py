@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import r2_score
-from metalearn.model_handlers import LightGBMRegressorHandler
-from metalearn.constants import RunMode
+from metaflow_helper.model_handlers import LightGBMRegressorHandler
+from metaflow_helper.constants import RunMode
 
 
 def test_lightgbm_model_regressor_handler_train():

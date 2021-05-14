@@ -9,7 +9,7 @@ from sklearn.compose import ColumnTransformer
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Dense, Dropout
 
-from metalearn.constants import RunMode
+from metaflow_helper.constants import RunMode
 
 
 def import_object_from_string(path):

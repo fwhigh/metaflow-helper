@@ -16,7 +16,7 @@ test_size = 0.2
 n_splits = 1
 contenders_spec = [
     {
-        '__model': ['metalearn.model_handlers.LightGBMRegressorHandler'],
+        '__model': ['metaflow-helper.model_handlers.LightGBMRegressorHandler'],
         'learning_rate': [0.1],
         'max_depth': [1, 2, 3],
         'n_estimators': [10_000],
@@ -28,7 +28,7 @@ contenders_spec = [
     },
     {
         # Anything with an underscore is a specially handled parameter
-        '__model': ['metalearn.model_handlers.KerasRegressorHandler'],
+        '__model': ['metaflow-helper.model_handlers.KerasRegressorHandler'],
         '__build_model': ['common.build_keras_model'],
         # These go to the model initializer
         'metric': ['mse'],
@@ -48,4 +48,4 @@ contenders_spec = [
         }],
     },
 ]
-dependencies = ['metalearn']
+dependencies = ['metaflow-helper']
