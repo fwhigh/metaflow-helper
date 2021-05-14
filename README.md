@@ -22,3 +22,8 @@ Run the examples.
 python -m pip install example-requirements.txt
 python examples/model-tournament/train.py
 ```
+
+## Release procedure
+
+1. Bump VERSION in setup.py
+1. Run `git tag -a v0.0.1 -m "Release v0.0.1" && git push origin v0.0.1` with matching version number
