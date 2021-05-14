@@ -12,6 +12,7 @@ clean:
 
 dev:
 	pip install --upgrade pip
+	pip install --upgrade --upgrade-strategy eager requirements.txt
 	pip install -e .
 
 # docs:
