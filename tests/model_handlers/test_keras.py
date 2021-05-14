@@ -7,8 +7,9 @@ from metalearn.constants import RunMode
 def test_keras_model_regressor_handler():
     n_examples = 10
     n_repeat = 100
+    offset = 10
     X = np.repeat(np.arange(n_examples), n_repeat)[:, None]
-    y = np.repeat(np.arange(n_examples).astype(float), n_repeat)
+    y = np.repeat(np.arange(n_examples).astype(float) + offset, n_repeat)
 
     model_handler = KerasRegressorHandler(
         build_model=build_keras_model,
