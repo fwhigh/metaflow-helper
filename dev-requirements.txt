@@ -1,5 +1,0 @@
-pylint
-pytest
-coverage
-codecov
-twine

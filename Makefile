@@ -12,15 +12,13 @@ clean:
 
 dev:
 	pip install --upgrade pip
-	pip install -r dev-requirements.txt
 	pip install -e .
 
 # docs:
 # 	$(MAKE) -C docs html
 
 package:
-	python setup.py sdist
-	python setup.py bdist_wheel
+	python -m build --sdist --wheel --outdir dist/ .
 
 test:
 	pip install -r test-requirements.txt
