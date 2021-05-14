@@ -2,7 +2,9 @@
 
 Convenience utilities for common machine learning tasks on Metaflow
 
-![Build](https://github.com/fwhigh/metalearn/actions/workflows/tests.yml/badge.svg)
+![Build](https://github.com/fwhigh/metalearn/actions/workflows/python36.yml/badge.svg)
+![Build](https://github.com/fwhigh/metalearn/actions/workflows/python37.yml/badge.svg)
+![Build](https://github.com/fwhigh/metalearn/actions/workflows/python38.yml/badge.svg)
 
 ## Quickstart
 
