@@ -144,7 +144,8 @@ class KerasHandler(BaseEstimator, RegressorMixin):
 
 
 def build_preprocessor_pipeline(numeric_features,
-                                categorical_features):
+                                categorical_features,
+                                step_name='preprocessor'):
     categorical_transformer = OneHotEncoder(handle_unknown='ignore')
     preprocessor = ColumnTransformer(
         transformers=[
@@ -153,10 +154,10 @@ def build_preprocessor_pipeline(numeric_features,
         ],
     )
     pipeline = Pipeline([
-        ('preprocessor', preprocessor),
+        (step_name, preprocessor),
     ])
     return pipeline
 
 
-def build_model_pipeline(model):
-    return Pipeline([('model', model)])
+def build_model_pipeline(model, step_name='model'):
+    return Pipeline([(step_name, model)])
