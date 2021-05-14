@@ -54,21 +54,27 @@ class KerasRegressorHandler(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X, *args, **kwargs):
-        return self.model.predict(X, *args, **kwargs).T[0]
+        return self.model.predict(X, *args, **kwargs)
 
 
-def build_keras_model(input_dim=None, dense_layer_widths=(10,), dropout_probabilities=(0.5,), metric='mse', optimizer='adam',
-                      loss='mean_squared_error', activation='relu'):
+def build_keras_model(input_dim=None, dense_layer_widths=(10,), dropout_probabilities=(0.5,), metric='mse',
+                      optimizer='adam', loss='mean_squared_error', activation=None,
+                      kernel_initializer='random_normal', bias_initializer='random_normal'):
     if input_dim is None:
         raise ValueError(input_dim)
     model = Sequential()
     for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities)):
         dense_layer_width, dropout_probability = params
         if i == 0:
-            model.add(Dense(dense_layer_width, input_dim=input_dim, activation=activation))
-            model.add(Dropout(dropout_probability))
+            model.add(Dense(
+                dense_layer_width, input_dim=input_dim, activation=activation, kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer))
+            if dropout_probability > 0:
+                model.add(Dropout(dropout_probability))
         else:
-            model.add(Dense(dense_layer_width, activation=activation))
-        model.add(Dense(1, activation=activation))
+            model.add(Dense(
+                dense_layer_width, activation=activation, kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer))
+        model.add(Dense(1, activation=activation, kernel_initializer=kernel_initializer))
     model.compile(loss=loss, optimizer=optimizer, metrics=[metric])
     return model

@@ -7,8 +7,9 @@ from metalearn.constants import RunMode
 def test_lightgbm_model_regressor_handler():
     n_examples = 10
     n_repeat = 10
+    offset = 10
     X = np.repeat(np.arange(n_examples), n_repeat)[:, None]
-    y = np.repeat(np.arange(n_examples).astype(float), n_repeat)
+    y = np.repeat(np.arange(n_examples).astype(float) + offset, n_repeat)
 
     model_handler = LightGBMRegressorHandler(
         mode=RunMode.TRAIN,
