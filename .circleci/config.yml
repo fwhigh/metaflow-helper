@@ -13,10 +13,6 @@ workflows:
           version: "3.6"
           requires:
             - build
-      - test-python-install:
-          version: "3.7"
-          requires:
-            - build
       - deploy:
           requires:
             - build
@@ -85,16 +81,16 @@ jobs:
           name: Smoke Test Install
           command: |
             python --version
-            sudo pip3 install circleci
+            sudo pip install circleci
   integration:
     docker:
-      - image: circleci/python:3.6
+      - image: cimg/python:3.6
     steps:
       - run: echo "It works!"
       - run: echo $RUN_EXTRA_TESTS
   deploy:
     docker:
-      - image: circleci/python:3.6
+      - image: cimg/python:3.6
     steps:
       - checkout
       - restore_cache:
