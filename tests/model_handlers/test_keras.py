@@ -5,7 +5,7 @@ from metalearn.constants import RunMode
 
 
 def test_keras_model_regressor_handler():
-    n_examples = 10
+    n_examples = 100
     n_repeat = 100
     offset = 10
     X = np.repeat(np.arange(n_examples), n_repeat)[:, None]
@@ -15,7 +15,7 @@ def test_keras_model_regressor_handler():
         build_model=build_keras_model,
         mode=RunMode.TRAIN,
         input_dim=1,
-        dense_layer_widths=(10,),
+        dense_layer_widths=(1,),
         dropout_probabilities=(0,),
     )
     model_handler.fit(X, y, epochs=100, verbose=0)
