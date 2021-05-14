@@ -29,6 +29,8 @@ class KerasRegressorHandler(BaseEstimator, RegressorMixin):
             kwargs['epochs'] = self.iterations
         if self.mode is RunMode.TEST:
             self.eval_metric = eval_metric
+            if self.patience is None:
+                ValueError(self.patience)
             self.callbacks = [
                 EarlyStopping(
                     monitor=self.eval_metric,
