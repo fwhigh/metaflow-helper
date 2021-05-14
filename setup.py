@@ -20,7 +20,7 @@ URL = 'https://github.com/fwhigh/metalearn'
 EMAIL = 'fwhigh@gmail.com'
 AUTHOR = 'F. William High'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 LICENSE = 'Apache-2.0'
 
 here = os.path.abspath(os.path.dirname(__file__))
