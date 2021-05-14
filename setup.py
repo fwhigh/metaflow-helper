@@ -7,6 +7,7 @@
 import io
 import os
 import sys
+import subprocess
 
 from setuptools import find_packages, setup
 from setuptools.command.install import install
@@ -49,11 +50,17 @@ class VerifyVersionCommand(install):
     description = 'verify that the git tag matches our version'
 
     def run(self):
-        tag = os.getenv('CIRCLE_TAG')
+        this_version = f'v{VERSION}'
+        cmd = "git describe --dirty --tags --long --match *.* --first-parent".split(" ")
+        try:
+            tag = subprocess.check_output(cmd).decode().strip()
+        except subprocess.CalledProcessError:
+            print('Unable to get version number from git tags')
+            tag = '<NONE>'
 
-        if tag != VERSION:
+        if tag != this_version:
             info = "Git tag: {0} does not match the version of this app: {1}".format(
-                tag, VERSION
+                tag, this_version
             )
             sys.exit(info)
 
