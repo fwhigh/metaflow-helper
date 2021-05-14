@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import r2_score
-from metalearn.model_handlers import KerasRegressorHandler, build_keras_model
-from metalearn.constants import RunMode
+from metaflow_helper.model_handlers import KerasRegressorHandler, build_keras_model
+from metaflow_helper.constants import RunMode
 
 
 def test_keras_model_regressor_handler_train():

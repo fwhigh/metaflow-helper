@@ -12,7 +12,7 @@ Install the package.
 
 ```bash
 git clone https://github.com/fwhigh/metalearn.git
-cd metalearn
+cd metaflow-helper
 python -m pip install .
 ```
 
