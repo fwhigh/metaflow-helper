@@ -1,7 +1,14 @@
 version: 2.1
 
+orbs:
+  # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
+  # Orb commands and jobs help you with common scripting around a language/tool
+  # so you dont have to copy and paste it everywhere.
+  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
+  python: circleci/python@1.2
+
 workflows:
-  build_and_deploy:  # This is the name of the workflow, feel free to change it to better match your workflow.
+  sample:  # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
     # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows
     jobs:
@@ -9,11 +16,11 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test-python-install:
+      - test-python-install
           version: "3.6"
           requires:
             - build
-      - test-python-install:
+      - test-python-install
           version: "3.7"
           requires:
             - build
@@ -130,19 +137,3 @@ jobs:
           command: |
             . venv/bin/activate
             twine upload dist/*
-
-          version: "3.6"
-          requires:
-            - build
-      - test-python-install
-          version: "3.7"
-          requires:
-            - build
-      - deploy:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
