@@ -1,1 +1,4 @@
-Flask
+numpy
+scikit-learn
+lightgbm
+tensorflow
