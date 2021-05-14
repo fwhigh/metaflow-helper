@@ -14,13 +14,13 @@ from setuptools.command.install import install
 import pkg_resources
 
 # Package meta-data.
-NAME = 'metalearn'
+NAME = 'metaflow-helper'
 DESCRIPTION = 'Convenience utilities for common machine learning tasks on Metaflow'
-URL = 'https://github.com/fwhigh/metalearn'
+URL = 'https://github.com/fwhigh/metaflow-helper'
 EMAIL = 'fwhigh@gmail.com'
 AUTHOR = 'F. William High'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.2'
+VERSION = '0.0.1'
 LICENSE = 'Apache-2.0'
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -84,7 +84,9 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Internet",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3 :: Only",
     ],
     keywords='circleci ci cd api sdk',
