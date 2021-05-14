@@ -81,7 +81,7 @@ jobs:
           name: Smoke Test Install
           command: |
             python --version
-            sudo pip install circleci
+            pip install circleci
   integration:
     docker:
       - image: cimg/python:3.6
