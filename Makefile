@@ -19,6 +19,7 @@ dev:
 # 	$(MAKE) -C docs html
 
 package:
+	pip install build
 	python -m build --sdist --wheel --outdir dist/ .
 
 test:

@@ -51,7 +51,7 @@ class VerifyVersionCommand(install):
 
     def run(self):
         this_version = f'v{VERSION}'
-        cmd = "git describe --dirty --tags --long --match *.* --first-parent".split(" ")
+        cmd = "git describe --tags --match v*.*.* --first-parent".split(" ")
         try:
             tag = subprocess.check_output(cmd).decode().strip()
         except subprocess.CalledProcessError:
