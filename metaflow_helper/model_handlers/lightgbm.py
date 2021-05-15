@@ -6,9 +6,10 @@ from ..constants import RunMode
 
 class LightGBMRegressorHandler(BaseEstimator, RegressorMixin):
 
-    def __init__(self, mode: RunMode, iterations=None, **kwargs):
+    def __init__(self, mode: RunMode, iterations=None, input_dim=None, **kwargs):
         self.mode = mode
         self.iterations = iterations
+        self.input_dim = input_dim
         if self.iterations is not None:
             kwargs['n_estimators'] = self.iterations
 

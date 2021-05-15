@@ -13,7 +13,6 @@ from metaflow_helper.constants import RunMode
 
 
 def import_object_from_string(path):
-    print(f'path {path}')
     path, obj_str = path.rsplit('.', 1)
     module_ = import_module(path)
     obj = getattr(module_, obj_str)
@@ -36,8 +35,13 @@ def system_command_with_retry(cmd: list):
         break
 
 
-def install_dependecies(dependencies: list):
-    system_command_with_retry(['pip', 'install', *dependencies])
+def install_dependencies(dependencies: list):
+    for dependency in dependencies:
+        for k, v in dependency.items():
+            try:
+                module_ = import_module(k)
+            except ModuleNotFoundError:
+                system_command_with_retry(['pip', 'install', v])
 
 
 def generate_data(init_kwargs, n_numeric_features):
@@ -101,20 +105,3 @@ def update_contender(contender, mode: RunMode, input_dim=None, best_iterations=N
             'build_model': import_object_from_string(contender['__build_model']),
         })
     return contender
-
-
-def build_keras_model(input_dim=None, dense_layer_widths=(10,), dropout_probabilities=(0.5,), metric='mse', optimizer='adam',
-                      loss='mean_squared_error', activation='relu'):
-    if input_dim is None:
-        raise ValueError(input_dim)
-    model = Sequential()
-    for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities)):
-        dense_layer_width, dropout_probability = params
-        if i == 0:
-            model.add(Dense(dense_layer_width, input_dim=input_dim, activation=activation))
-            model.add(Dropout(dropout_probability))
-        else:
-            model.add(Dense(dense_layer_width, activation=activation))
-        model.add(Dense(1, activation=activation))
-    model.compile(loss=loss, optimizer=optimizer, metrics=[metric])
-    return model

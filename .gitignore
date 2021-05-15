@@ -1,5 +1,6 @@
 .metaflow
 .idea
+results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

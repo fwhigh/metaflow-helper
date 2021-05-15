@@ -1,7 +1,8 @@
 from sklearn.base import BaseEstimator, RegressorMixin
 from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout
+from tensorflow.python.keras.layers import Dense, Dropout, Input
+from tensorflow.python.keras import regularizers
 
 from ..constants import RunMode
 
@@ -9,6 +10,7 @@ from ..constants import RunMode
 class KerasRegressorHandler(BaseEstimator, RegressorMixin):
 
     def __init__(self, build_model=None, input_dim=None, mode=RunMode, iterations=None, eval_metric=None, **kwargs):
+        self.build_model = build_model
         self.input_dim = input_dim
         self.mode = mode
         self.min_delta = 0
@@ -17,7 +19,6 @@ class KerasRegressorHandler(BaseEstimator, RegressorMixin):
         self.eval_metric = eval_metric
         self.history = []
         self.iterations = iterations
-        self.build_model = build_model
 
         self.model = self.build_model(input_dim=self.input_dim, **kwargs)
 
@@ -56,27 +57,33 @@ class KerasRegressorHandler(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X, *args, **kwargs):
-        return self.model.predict(X, *args, **kwargs)
+        return self.model.predict(X, *args, **kwargs).T[0]
 
 
-def build_keras_model(input_dim=None, dense_layer_widths=(10,), dropout_probabilities=(0.5,), metric='mse',
-                      optimizer='adam', loss='mean_squared_error', activation=None,
-                      kernel_initializer='random_normal', bias_initializer='random_normal'):
+def build_keras_regression_model(input_dim=None, dense_layer_widths=(10,), dropout_probabilities=(0,),
+                                 metric='mse', optimizer='adam', loss='mean_squared_error', activation=None,
+                                 kernel_initializer='random_normal', bias_initializer='random_normal',
+                                 l1_lambdas=(0,), l2_lambdas=(0,),
+                                 l1_lambda_final=0, l2_lambda_final=0):
     if input_dim is None:
         raise ValueError(input_dim)
     model = Sequential()
-    for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities)):
-        dense_layer_width, dropout_probability = params
-        if i == 0:
-            model.add(Dense(
-                dense_layer_width, input_dim=input_dim, activation=activation, kernel_initializer=kernel_initializer,
-                bias_initializer=bias_initializer))
-            if dropout_probability > 0:
-                model.add(Dropout(dropout_probability))
-        else:
-            model.add(Dense(
-                dense_layer_width, activation=activation, kernel_initializer=kernel_initializer,
-                bias_initializer=bias_initializer))
-        model.add(Dense(1, activation=activation, kernel_initializer=kernel_initializer))
+    model.add(Input(shape=(input_dim, )))
+    for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities, l1_lambdas, l2_lambdas)):
+        dense_layer_width, dropout_probability, l1_lambda, l2_lambda = params
+        model.add(Dense(
+            dense_layer_width, activation=activation, kernel_initializer=kernel_initializer,
+            bias_initializer=bias_initializer,
+            kernel_regularizer=regularizers.l1_l2(l1=l1_lambda, l2=l2_lambda),
+            bias_regularizer=regularizers.l2(l2_lambda),
+            activity_regularizer=regularizers.l2(l2_lambda)
+        ))
+        model.add(Dropout(dropout_probability))
+    model.add(Dense(
+        1, activation=activation, kernel_initializer=kernel_initializer,
+        kernel_regularizer=regularizers.l1_l2(l1=l1_lambda_final, l2=l2_lambda_final),
+        bias_regularizer=regularizers.l2(l2_lambda_final),
+        activity_regularizer=regularizers.l2(l2_lambda_final)
+    ))
     model.compile(loss=loss, optimizer=optimizer, metrics=[metric])
     return model
