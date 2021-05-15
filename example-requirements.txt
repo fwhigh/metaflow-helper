@@ -1,2 +1,5 @@
 metaflow
+plotly-express
+kaleido
 pandas
+numpy

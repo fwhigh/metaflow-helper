@@ -1,6 +1,6 @@
 n_numeric_features = 10
 n_informative_numeric_features = 5
-n_categorical_features = 2
+n_categorical_features = 1
 make_regression_init_kwargs = {
     f'type_{i}': {
         'n_samples': 10_000,
@@ -37,71 +37,7 @@ contenders_spec = [
         '__build_model': ['metaflow_helper.model_handlers.build_keras_regression_model'],
         # These go to the model initializer
         'metric': ['mse'],
-        'dense_layer_widths': [()],
-        'dropout_probabilities': [()],
-        # This goes to the pipeline elements' fitters by pipeline step stepname, where f'{stepname}__parameter' gets
-        # renamed to parameter and then passed to the fitter for step stepname. The model stepname = 'model'
-        # and the preprocessing stepname = 'preprocessor'. See utilities.build_pipeline.
-        '__fit_kwargs': [{
-            'model__batch_size': None,
-            'model__epochs': 10_000,
-            'model__validation_split': 0.2,
-            'model__eval_metric': 'val_mse',  # monitor. Examples: 'mse' or 'val_mse'
-            'model__verbose': 0,
-            'model__patience': 10,
-            'model__min_delta': 0.1,
-        }],
-    },
-    {
-        # Anything with an underscore is a specially handled parameter
-        '__model': ['metaflow_helper.model_handlers.KerasRegressorHandler'],
-        '__build_model': ['metaflow_helper.model_handlers.build_keras_regression_model'],
-        # These go to the model initializer
-        'metric': ['mse'],
-        'dense_layer_widths': [(15,)],
-        'dropout_probabilities': [(0,)],
-        # This goes to the pipeline elements' fitters by pipeline step stepname, where f'{stepname}__parameter' gets
-        # renamed to parameter and then passed to the fitter for step stepname. The model stepname = 'model'
-        # and the preprocessing stepname = 'preprocessor'. See utilities.build_pipeline.
-        '__fit_kwargs': [{
-            'model__batch_size': None,
-            'model__epochs': 10_000,
-            'model__validation_split': 0.2,
-            'model__eval_metric': 'val_mse',  # monitor. Examples: 'mse' or 'val_mse'
-            'model__verbose': 0,
-            'model__patience': 10,
-            'model__min_delta': 0.1,
-        }],
-    },
-    {
-        # Anything with an underscore is a specially handled parameter
-        '__model': ['metaflow_helper.model_handlers.KerasRegressorHandler'],
-        '__build_model': ['metaflow_helper.model_handlers.build_keras_regression_model'],
-        # These go to the model initializer
-        'metric': ['mse'],
-        'dense_layer_widths': [(15, 15,)],
-        'dropout_probabilities': [(0, 0,)],
-        # This goes to the pipeline elements' fitters by pipeline step stepname, where f'{stepname}__parameter' gets
-        # renamed to parameter and then passed to the fitter for step stepname. The model stepname = 'model'
-        # and the preprocessing stepname = 'preprocessor'. See utilities.build_pipeline.
-        '__fit_kwargs': [{
-            'model__batch_size': None,
-            'model__epochs': 10_000,
-            'model__validation_split': 0.2,
-            'model__eval_metric': 'val_mse',  # monitor. Examples: 'mse' or 'val_mse'
-            'model__verbose': 0,
-            'model__patience': 10,
-            'model__min_delta': 0.1,
-        }],
-    },
-    {
-        # Anything with an underscore is a specially handled parameter
-        '__model': ['metaflow_helper.model_handlers.KerasRegressorHandler'],
-        '__build_model': ['metaflow_helper.model_handlers.build_keras_regression_model'],
-        # These go to the model initializer
-        'metric': ['mse'],
-        'dense_layer_widths': [(15*15,)],
-        'dropout_probabilities': [(0,)],
+        'dense_layer_widths': [(), (15,), (15, 15,), (15*15,)],
         # This goes to the pipeline elements' fitters by pipeline step stepname, where f'{stepname}__parameter' gets
         # renamed to parameter and then passed to the fitter for step stepname. The model stepname = 'model'
         # and the preprocessing stepname = 'preprocessor'. See utilities.build_pipeline.

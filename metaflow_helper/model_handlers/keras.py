@@ -5,9 +5,10 @@ from tensorflow.python.keras.layers import Dense, Dropout, Input
 from tensorflow.python.keras import regularizers
 
 from ..constants import RunMode
+from .base import BaseModelHandler
 
 
-class KerasRegressorHandler(BaseEstimator, RegressorMixin):
+class KerasRegressorHandler(BaseModelHandler, BaseEstimator, RegressorMixin):
 
     def __init__(self, build_model=None, input_dim=None, mode=RunMode, iterations=None, eval_metric=None, **kwargs):
         self.build_model = build_model
@@ -20,6 +21,7 @@ class KerasRegressorHandler(BaseEstimator, RegressorMixin):
         self.history = []
         self.iterations = iterations
 
+        self._validate_init_kwargs()
         self.model = self.build_model(input_dim=self.input_dim, **kwargs)
 
     def fit(self, X, y, validation_data=None, patience=None, min_delta=0, eval_metric=None, **kwargs):
@@ -47,6 +49,7 @@ class KerasRegressorHandler(BaseEstimator, RegressorMixin):
                     kwargs.pop(k)
                 except KeyError:
                     pass
+        self._validate_fit_kwargs()
         if kwargs is not None and 'validation_split' in kwargs:
             result = self.model.fit(X, y, callbacks=self.callbacks, **kwargs)
         else:
@@ -67,6 +70,12 @@ def build_keras_regression_model(input_dim=None, dense_layer_widths=(10,), dropo
                                  l1_lambda_final=0, l2_lambda_final=0):
     if input_dim is None:
         raise ValueError(input_dim)
+    if len(dense_layer_widths) > len(dropout_probabilities):
+        dropout_probabilities = tuple([dropout_probabilities[0]]*len(dense_layer_widths))
+    if len(dense_layer_widths) > len(l1_lambdas):
+        dropout_probabilities = tuple([l1_lambdas[0]]*len(dense_layer_widths))
+    if len(dense_layer_widths) > len(l2_lambdas):
+        dropout_probabilities = tuple([l2_lambdas[0]]*len(dense_layer_widths))
     model = Sequential()
     model.add(Input(shape=(input_dim, )))
     for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities, l1_lambdas, l2_lambdas)):

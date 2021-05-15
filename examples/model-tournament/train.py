@@ -151,7 +151,13 @@ class Train(FlowSpec):
             model__validation_data=(X_test_transformed, y_test),
             **fit_kwargs,
         )
-        self.score = r2_score(y_test, model_pipeline.predict(X_test_transformed))
+        y_test_pred = model_pipeline.predict(X_test_transformed)
+        model_pipeline.named_steps['model'].plot(
+            dir=f"results/{current.run_id}",
+            y_true=y_test,
+            y_pred=y_test_pred,
+        )
+        self.score = r2_score(y_test, y_test_pred)
         print(f'score {self.score}, contender {contender}')
 
         self.next(self.train)
@@ -188,8 +194,9 @@ class Train(FlowSpec):
     @step
     def end(self):
         indent = 4
-        Path("results").mkdir(parents=True, exist_ok=True)
-        with open(f'results/results-{current.run_id}.txt', 'w') as f:
+        results_dir = f"results/{current.run_id}"
+        Path(results_dir).mkdir(parents=True, exist_ok=True)
+        with open(f'{results_dir}/summary.txt', 'w') as f:
             print(f'data set:\n{json.dumps(self.make_regression_init_kwargs, indent=indent)}', file=f)
             print('\n', file=f)
             for i, k in enumerate(sorted(self.contender_results.keys(), key=lambda k: -1 * self.contender_results[k]['mean_score'])):
