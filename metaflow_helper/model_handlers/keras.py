@@ -1,11 +1,12 @@
 from sklearn.base import BaseEstimator, RegressorMixin
 from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout, Input
+from tensorflow.python.keras.layers import Dense, Dropout, InputLayer
 from tensorflow.python.keras import regularizers
 
 from ..constants import RunMode
 from .base import BaseModelHandler
+from ..utils import import_object_from_string
 
 
 class KerasRegressorHandler(BaseModelHandler, BaseEstimator, RegressorMixin):
@@ -17,29 +18,31 @@ class KerasRegressorHandler(BaseModelHandler, BaseEstimator, RegressorMixin):
         self.min_delta = 0
         self.patience = None
         self.callbacks = None
-        self.eval_metric = eval_metric
+        self.monitor = eval_metric
         self.history = []
         self.iterations = iterations
+        self.verbose = 0
 
         self._validate_init_kwargs()
-        self.model = self.build_model(input_dim=self.input_dim, **kwargs)
+        self.model = import_object_from_string(self.build_model)(input_dim=self.input_dim, **kwargs)
 
-    def fit(self, X, y, validation_data=None, patience=None, min_delta=0, eval_metric=None, **kwargs):
+    def fit(self, X, y, validation_data=None, patience=None, min_delta=0, monitor=None, **kwargs):
         kwargs = dict(kwargs)
         self.patience = patience
         self.min_delta = min_delta
         if self.iterations is not None:
             kwargs['epochs'] = self.iterations
+        if 'verbose' in kwargs:
+            self.verbose = kwargs['verbose']
         if self.mode is RunMode.TEST:
-            self.eval_metric = eval_metric
+            self.monitor = monitor
             if self.patience is None:
                 ValueError(self.patience)
             self.callbacks = [
                 EarlyStopping(
-                    monitor=self.eval_metric,
+                    monitor=self.monitor,
                     min_delta=self.min_delta,
-                    mode='min',
-                    verbose=1,
+                    verbose=self.verbose,
                     patience=self.patience,
                 ),
             ]
@@ -77,7 +80,7 @@ def build_keras_regression_model(input_dim=None, dense_layer_widths=(10,), dropo
     if len(dense_layer_widths) > len(l2_lambdas):
         dropout_probabilities = tuple([l2_lambdas[0]]*len(dense_layer_widths))
     model = Sequential()
-    model.add(Input(shape=(input_dim, )))
+    model.add(InputLayer(input_shape=(input_dim, )))
     for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities, l1_lambdas, l2_lambdas)):
         dense_layer_width, dropout_probability, l1_lambda, l2_lambda = params
         model.add(Dense(

@@ -1,5 +1,8 @@
 metaflow
+scikit-learn
 plotly-express
 kaleido
 pandas
 numpy
+scipy
+jupyterlab

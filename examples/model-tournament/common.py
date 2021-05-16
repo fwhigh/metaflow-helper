@@ -1,22 +1,27 @@
+import os, errno
 from importlib import import_module
 import subprocess
 import time
+import re
+from pathlib import Path
+import pickle
 import pandas as pd
 from sklearn.datasets import make_regression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
-from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout
+import plotly.graph_objects as go
+import plotly
 
 from metaflow_helper.constants import RunMode
 
 
-def import_object_from_string(path):
-    path, obj_str = path.rsplit('.', 1)
-    module_ = import_module(path)
-    obj = getattr(module_, obj_str)
-    return obj
+def silent_rm_file(filename):
+    try:
+        os.remove(filename)
+    except OSError as e: # this would be "except OSError, e:" before Python 2.6
+        if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
+            raise # re-raise exception if a different error occurred
 
 
 def system_command_with_retry(cmd: list):
@@ -86,7 +91,15 @@ def build_model_pipeline(model, step_name='model'):
 
 
 def parse_contender_model_init(contender):
-    return {k: v for k, v in contender.items() if not k.startswith('__')}
+    return parse_contender(contender, prefix_filter='__init_kwargs__model__', prefix_to_remove='__init_kwargs__model__')
+
+
+def parse_contender_model_fit(contender):
+    return parse_contender(contender, prefix_filter='__fit_kwargs__model__', prefix_to_remove='__fit_kwargs__')
+
+
+def parse_contender(contender, prefix_filter, prefix_to_remove):
+    return {re.sub(r'^' + re.escape(prefix_to_remove), '', k): v for k, v in contender.items() if k.startswith(prefix_filter)}
 
 
 def update_contender(contender, mode: RunMode, input_dim=None, best_iterations=None):
@@ -94,14 +107,42 @@ def update_contender(contender, mode: RunMode, input_dim=None, best_iterations=N
         pass
     elif mode is RunMode.TRAIN:
         contender.update({
-            'iterations': best_iterations,
+            '__init_kwargs__model__iterations': best_iterations,
         })
     contender.update({
-        'input_dim': input_dim,
-        'mode': mode,
+        '__init_kwargs__model__input_dim': input_dim,
+        '__init_kwargs__model__mode': mode,
     })
-    if '__build_model' in contender:
-        contender.update({
-            'build_model': import_object_from_string(contender['__build_model']),
-        })
     return contender
+
+
+def plot_all_scores(contender_results, dir, auto_open=True):
+    Path(dir).mkdir(parents=True, exist_ok=True)
+    df = pd.DataFrame().from_records([{
+        **pickle.loads(k),
+        **contender_results[k]}
+        for k in contender_results
+    ])
+    fig = go.Figure()
+    for index, row in df.iterrows():
+        fig.add_trace(
+            go.Box(
+                name=f"{row.name} {str(row['__model']).rsplit('.', 1)[1]}",
+                x=(f"{row.name}",),
+                y=row['scores'],
+            ),
+        )
+    fig.update_layout(
+        xaxis_title='Model',
+        yaxis_title='Score',
+        template='none',
+    )
+    print(f'ADFDAFDASFDAS writing ' + f"{dir}/all-scores.png")
+    silent_rm_file(f"{dir}/all-scores.png")
+    if os.path.isfile(f"{dir}/all-scores.png"):
+        raise FileExistsError(f"{dir}/all-scores.png")
+    fig.write_image(f"{dir}/all-scores.png")
+    print(f'writing ' + f"{dir}/all-scores.html")
+    silent_rm_file(f"{dir}/all-scores.html")
+    plotly.offline.plot(fig, filename=f"{dir}/all-scores.html", auto_open=auto_open)
+    return fig

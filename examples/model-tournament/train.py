@@ -4,13 +4,16 @@ import collections
 from pathlib import Path
 from scipy import stats
 import numpy as np
-from metaflow import FlowSpec, step, Parameter, current
+from metaflow import FlowSpec, step, current
 from sklearn.model_selection import train_test_split, ParameterGrid, KFold
 from sklearn.metrics import r2_score
-import config
-import common
 
 from metaflow_helper.constants import RunMode
+from metaflow_helper.utils import import_object_from_string
+from metaflow_helper.plot import plot_predicted_vs_true
+
+import config
+import common
 
 
 class Train(FlowSpec):
@@ -50,7 +53,7 @@ class Train(FlowSpec):
         common.install_dependencies(config.dependencies)
         self.fold = self.input
         contender = self.contender
-        fit_kwargs = contender['__fit_kwargs']
+        model_fit_kwargs = common.parse_contender_model_fit(contender)
 
         X = self.df.loc[self.train_validation_index, :]
         y = self.df.loc[self.train_validation_index, 'target']
@@ -62,7 +65,6 @@ class Train(FlowSpec):
         y_train = y.iloc[train]
         X_test = X.iloc[test, :]
         y_test = y.iloc[test]
-
         preprocessor_pipeline = common.build_preprocessor_pipeline(
             numeric_features=self.numeric_features,
             categorical_features=self.categorical_features,
@@ -72,16 +74,17 @@ class Train(FlowSpec):
 
         contender = common.update_contender(contender, mode=RunMode.TEST, input_dim=X_train_transformed.shape[1])
 
-        model_handler_class = common.import_object_from_string(contender['__model'])
+        model_handler_class = import_object_from_string(contender['__model'])
+        model_init_kwargs = common.parse_contender_model_init(contender)
 
         model_pipeline = common.build_model_pipeline(
-            model=model_handler_class(**common.parse_contender_model_init(contender)),
+            model=model_handler_class(**model_init_kwargs),
         )
         model_pipeline.fit(
             X_train_transformed,
             y_train,
             model__validation_data=(X_test_transformed, y_test),
-            **fit_kwargs,
+            **model_fit_kwargs,
         )
         self.score = r2_score(y_test, model_pipeline.predict(X_test_transformed))
         self.iterations = model_pipeline.named_steps['model'].iterations
@@ -122,13 +125,12 @@ class Train(FlowSpec):
         print(f'best_contender {self.best_contender}, contender_results {self.contender_results[self.best_contender_ser]}')
         self.best_iterations = round(self.contender_results[self.best_contender_ser]['mean_iteration'])
         contender = self.best_contender
-        fit_kwargs = contender['__fit_kwargs']
+        model_fit_kwargs = common.parse_contender_model_fit(contender)
 
         X_train = self.df.loc[self.train_validation_index, :]
         y_train = self.df.loc[self.train_validation_index, 'target']
         X_test = self.df.loc[self.test_index, :]
         y_test = self.df.loc[self.test_index, 'target']
-
         preprocessor_pipeline = common.build_preprocessor_pipeline(
             numeric_features=self.numeric_features,
             categorical_features=self.categorical_features,
@@ -140,19 +142,19 @@ class Train(FlowSpec):
             contender, mode=RunMode.TEST, input_dim=X_train_transformed.shape[1],
         )
 
-        model_handler_class = common.import_object_from_string(contender['__model'])
-
+        model_handler_class = import_object_from_string(contender['__model'])
+        model_init_kwargs = common.parse_contender_model_init(contender)
         model_pipeline = common.build_model_pipeline(
-            model=model_handler_class(**common.parse_contender_model_init(contender)),
+            model=model_handler_class(**model_init_kwargs),
         )
         model_pipeline.fit(
             X_train_transformed,
             y_train,
             model__validation_data=(X_test_transformed, y_test),
-            **fit_kwargs,
+            **model_fit_kwargs,
         )
         y_test_pred = model_pipeline.predict(X_test_transformed)
-        model_pipeline.named_steps['model'].plot(
+        plot_predicted_vs_true(
             dir=f"results/{current.run_id}",
             y_true=y_test,
             y_pred=y_test_pred,
@@ -166,11 +168,10 @@ class Train(FlowSpec):
     def train(self):
         common.install_dependencies(config.dependencies)
         contender = self.best_contender
-        fit_kwargs = contender['__fit_kwargs']
+        model_fit_kwargs = common.parse_contender_model_fit(contender)
 
         X = self.df.loc[:, :]
         y = self.df.loc[:, 'target']
-
         preprocessor_pipeline = common.build_preprocessor_pipeline(
             numeric_features=self.numeric_features,
             categorical_features=self.categorical_features,
@@ -181,13 +182,12 @@ class Train(FlowSpec):
             contender, mode=RunMode.TRAIN, input_dim=X_transformed.shape[1],
             best_iterations=self.best_iterations,
         )
-
-        model_handler_class = common.import_object_from_string(contender['__model'])
-
+        model_init_kwargs = common.parse_contender_model_init(contender)
+        model_handler_class = import_object_from_string(contender['__model'])
         model_pipeline = common.build_model_pipeline(
-            model=model_handler_class(**common.parse_contender_model_init(contender)),
+            model=model_handler_class(**model_init_kwargs),
         )
-        model_pipeline.fit(X_transformed, y, **fit_kwargs)
+        model_pipeline.fit(X_transformed, y, **model_fit_kwargs)
 
         self.next(self.end)
 
@@ -208,6 +208,11 @@ class Train(FlowSpec):
                 print(f'contender:\n{json.dumps(contender, indent=indent)}', file=f)
                 print(f'results:\n{json.dumps(v, indent=indent)}', file=f)
                 print('\n', file=f)
+        common.plot_all_scores(
+            contender_results=self.contender_results,
+            dir=results_dir,
+        )
+
 
 if __name__ == '__main__':
     Train()

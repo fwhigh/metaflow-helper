@@ -15,6 +15,11 @@ dev:
 	pip install --upgrade --upgrade-strategy eager -r requirements.txt
 	pip install -e .
 
+example:
+	pip install --upgrade pip
+	pip install -r example-requirements.txt
+	jupyter labextension install jupyterlab-plotly
+
 # docs:
 # 	$(MAKE) -C docs html
 

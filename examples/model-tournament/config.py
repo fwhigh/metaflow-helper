@@ -1,10 +1,10 @@
 n_numeric_features = 10
 n_informative_numeric_features = 5
-n_categorical_features = 1
+n_categorical_features = 2
 make_regression_init_kwargs = {
     f'type_{i}': {
-        'n_samples': 10_000,
-        'noise': 10,
+        'n_samples': round(10_000/n_categorical_features),
+        'noise': 100,
         'n_features': n_numeric_features,
         'n_informative': n_informative_numeric_features,
         'coef': True,
@@ -13,43 +13,35 @@ make_regression_init_kwargs = {
     for i in range(n_categorical_features)
 }
 test_size = 0.2
-n_splits = 1
+n_splits = 5
 contenders_spec = [
     {
-        # Anything with an underscore is a specially handled parameter
+        # This is the algo
         '__model': ['metaflow_helper.model_handlers.LightGBMRegressorHandler'],
         # These go to the model initializer
-        'learning_rate': [0.1],
-        'max_depth': [1, 2, 3],
-        'n_estimators': [10_000],
-        # This goes to the pipeline elements' fitters by pipeline step stepname, where f'{stepname}__parameter' gets
-        # renamed to parameter and then passed to the fitter for step stepname. The model stepname = 'model'
-        # and the preprocessing stepname = 'preprocessor'. See utilities.build_pipeline.
-        '__fit_kwargs': [{
-            'model__eval_metric': 'mse',
-            'model__early_stopping_rounds': 10,
-            'model__verbose': 0,
-        }],
+        '__init_kwargs__model__learning_rate': [0.1],
+        '__init_kwargs__model__max_depth': [1, 2, 3],
+        '__init_kwargs__model__n_estimators': [10_000],
+        # These go to the model fitter
+        '__fit_kwargs__model__eval_metric': ['mse'],
+        '__fit_kwargs__model__early_stopping_rounds': [10],
+        '__fit_kwargs__model__verbose': [0],
     },
     {
-        # Anything with an underscore is a specially handled parameter
+        # This is the algo
         '__model': ['metaflow_helper.model_handlers.KerasRegressorHandler'],
-        '__build_model': ['metaflow_helper.model_handlers.build_keras_regression_model'],
         # These go to the model initializer
-        'metric': ['mse'],
-        'dense_layer_widths': [(), (15,), (15, 15,), (15*15,)],
-        # This goes to the pipeline elements' fitters by pipeline step stepname, where f'{stepname}__parameter' gets
-        # renamed to parameter and then passed to the fitter for step stepname. The model stepname = 'model'
-        # and the preprocessing stepname = 'preprocessor'. See utilities.build_pipeline.
-        '__fit_kwargs': [{
-            'model__batch_size': None,
-            'model__epochs': 10_000,
-            'model__validation_split': 0.2,
-            'model__eval_metric': 'val_mse',  # monitor. Examples: 'mse' or 'val_mse'
-            'model__verbose': 0,
-            'model__patience': 10,
-            'model__min_delta': 0.1,
-        }],
+        '__init_kwargs__model__build_model': ['metaflow_helper.model_handlers.build_keras_regression_model'],
+        '__init_kwargs__model__metric': ['mse'],
+        '__init_kwargs__model__dense_layer_widths': [(), (15,), (15, 15,), (15*15,)],
+        # These go to the model fitter
+        '__fit_kwargs__model__batch_size': [None],
+        '__fit_kwargs__model__epochs': [10_000],
+        '__fit_kwargs__model__validation_split': [0.2],
+        '__fit_kwargs__model__monitor': ['val_mse'],
+        '__fit_kwargs__model__verbose': [0],
+        '__fit_kwargs__model__patience': [10],
+        '__fit_kwargs__model__min_delta': [0.1],
     },
 ]
 dependencies = [
