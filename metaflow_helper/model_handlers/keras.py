@@ -26,7 +26,7 @@ class KerasRegressorHandler(BaseModelHandler, BaseEstimator, RegressorMixin):
         self._validate_init_kwargs()
         self.model = import_object_from_string(self.build_model)(input_dim=self.input_dim, **kwargs)
 
-    def fit(self, X, y, validation_data=None, patience=None, min_delta=0, monitor=None, **kwargs):
+    def fit(self, X, y, validation_data=None, patience=None, min_delta=0, monitor='mse', **kwargs):
         kwargs = dict(kwargs)
         self.patience = patience
         self.min_delta = min_delta

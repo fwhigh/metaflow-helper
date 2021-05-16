@@ -12,7 +12,7 @@ def test_keras_model_regressor_handler_train():
     y = np.repeat(np.arange(n_examples).astype(float)/n_examples + offset, n_repeat)
 
     model_handler = KerasRegressorHandler(
-        build_model=build_keras_regression_model,
+        build_model='metaflow_helper.model_handlers.build_keras_regression_model',
         mode=RunMode.TRAIN,
         input_dim=1,
         dense_layer_widths=(),
@@ -32,7 +32,7 @@ def test_keras_model_regressor_handler_test():
     y = np.repeat(np.arange(n_examples).astype(float)/n_examples + offset, n_repeat)
 
     model_handler = KerasRegressorHandler(
-        build_model=build_keras_regression_model,
+        build_model='metaflow_helper.model_handlers.build_keras_regression_model',
         mode=RunMode.TEST,
         input_dim=1,
         dense_layer_widths=(),
