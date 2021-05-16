@@ -23,7 +23,13 @@ which `metaflow-helper` doesn't currently require.
 
 ```bash
 python -m pip install -r example-requirements.txt
-python examples/model-tournament/train.py run
+python examples/model-selection/train.py run
+```
+
+Visualize the flow.
+
+```bash
+python examples/model-selection/train.py output-dot | dot -Grankdir=TB -Tpng -o flow.pngflow.png
 ```
 
 ## Release procedure

@@ -158,6 +158,7 @@ class Train(FlowSpec):
             dir=f"results/{current.run_id}",
             y_true=y_test,
             y_pred=y_test_pred,
+            auto_open=config.auto_open_figures,
         )
         self.score = r2_score(y_test, y_test_pred)
         print(f'score {self.score}, contender {contender}')
@@ -211,6 +212,7 @@ class Train(FlowSpec):
         common.plot_all_scores(
             contender_results=self.contender_results,
             dir=results_dir,
+            auto_open=config.auto_open_figures,
         )
 
 

@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import plotly
 
 
-def plot_predicted_vs_true(self, y_true, y_pred, dir='.', auto_open=True):
+def plot_predicted_vs_true(y_true, y_pred, dir='.', auto_open=True):
     Path(dir).mkdir(parents=True, exist_ok=True)
     if len(y_true) > 1_000:
         idx = random.sample(range(len(y_true)), 1_000)

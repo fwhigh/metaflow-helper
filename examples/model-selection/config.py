@@ -1,9 +1,9 @@
 n_numeric_features = 10
 n_informative_numeric_features = 5
-n_categorical_features = 2
+n_categorical_features = 1
 make_regression_init_kwargs = {
     f'type_{i}': {
-        'n_samples': round(10_000/n_categorical_features),
+        'n_samples': round(1_000/n_categorical_features),
         'noise': 100,
         'n_features': n_numeric_features,
         'n_informative': n_informative_numeric_features,
@@ -47,3 +47,4 @@ contenders_spec = [
 dependencies = [
     {'metaflow_helper': 'git+ssh://git@github.com/fwhigh/metaflow-helper.git'},
 ]
+auto_open_figures = True

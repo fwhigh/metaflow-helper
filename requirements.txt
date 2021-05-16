@@ -2,3 +2,5 @@ tensorflow
 scikit-learn
 lightgbm
 numpy
+plotly-express
+kaleido

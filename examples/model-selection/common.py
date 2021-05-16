@@ -128,7 +128,7 @@ def plot_all_scores(contender_results, dir, auto_open=True):
         fig.add_trace(
             go.Box(
                 name=f"{row.name} {str(row['__model']).rsplit('.', 1)[1]}",
-                x=(f"{row.name}",),
+                x=[f"{row.name}"]*len(row['scores']),
                 y=row['scores'],
             ),
         )
@@ -137,10 +137,8 @@ def plot_all_scores(contender_results, dir, auto_open=True):
         yaxis_title='Score',
         template='none',
     )
-    print(f'ADFDAFDASFDAS writing ' + f"{dir}/all-scores.png")
+    print(f'writing ' + f"{dir}/all-scores.png")
     silent_rm_file(f"{dir}/all-scores.png")
-    if os.path.isfile(f"{dir}/all-scores.png"):
-        raise FileExistsError(f"{dir}/all-scores.png")
     fig.write_image(f"{dir}/all-scores.png")
     print(f'writing ' + f"{dir}/all-scores.html")
     silent_rm_file(f"{dir}/all-scores.html")
