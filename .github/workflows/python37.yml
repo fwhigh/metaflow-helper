@@ -1,4 +1,4 @@
-name: Python 3.7
+name: Python 3.7 unit tests
 
 on: [push]
 

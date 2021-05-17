@@ -4,7 +4,7 @@ import collections
 from pathlib import Path
 from scipy import stats
 import numpy as np
-from metaflow import FlowSpec, step, current
+from metaflow import FlowSpec, step, current, Parameter
 from sklearn.model_selection import train_test_split, ParameterGrid, KFold
 from sklearn.metrics import r2_score
 
@@ -13,54 +13,68 @@ from metaflow_helper.utils import import_object_from_string
 from metaflow_helper.plot import plot_predicted_vs_true
 
 import config
+import debug_config
 import common
+
 
 
 class Train(FlowSpec):
 
+    test_mode = Parameter(
+        'test_mode',
+        help="Run in test mode?",
+        type=bool,
+        default=False,
+    )
+
     @step
     def start(self):
-        common.install_dependencies(config.dependencies)
+        this_config = debug_config if self.test_mode else config
+        if self.test_mode:
+            print('Running in test mode')
+        common.install_dependencies(this_config.dependencies)
         self.df, self.numeric_features, self.categorical_features = common.generate_data(
-            n_numeric_features=config.n_numeric_features,
-            init_kwargs=config.make_regression_init_kwargs,
+            n_numeric_features=this_config.n_numeric_features,
+            init_kwargs=this_config.make_regression_init_kwargs,
         )
-        self.make_regression_init_kwargs = config.make_regression_init_kwargs
+        self.make_regression_init_kwargs = this_config.make_regression_init_kwargs
         print(f'generated {len(self.df)} rows and {len(self.df.columns)} columns')
 
         self.train_validation_index, self.test_index = train_test_split(
-            self.df.index, test_size=config.test_size,
+            self.df.index, test_size=this_config.test_size,
         )
 
-        self.contenders = ParameterGrid(config.contenders_spec)
-        if config.n_splits > 1:
-            self.k_fold = KFold(n_splits=config.n_splits)
+        self.contenders = ParameterGrid(this_config.contenders_spec)
+        if this_config.n_splits > 1:
+            self.k_fold = KFold(n_splits=this_config.n_splits)
         else:
             self.k_fold = None
-        self.folds = list(range(config.n_splits))
+        self.folds = list(range(this_config.n_splits))
 
         self.next(self.foreach_contender, foreach='contenders')
 
     @step
     def foreach_contender(self):
-        common.install_dependencies(config.dependencies)
+        this_config = debug_config if self.test_mode else config
+        common.install_dependencies(this_config.dependencies)
         self.contender = self.input
 
         self.next(self.foreach_fold, foreach='folds')
 
     @step
     def foreach_fold(self):
-        common.install_dependencies(config.dependencies)
+        this_config = debug_config if self.test_mode else config
+        common.install_dependencies(this_config.dependencies)
         self.fold = self.input
         contender = self.contender
         model_fit_kwargs = common.parse_contender_model_fit(contender)
 
         X = self.df.loc[self.train_validation_index, :]
         y = self.df.loc[self.train_validation_index, 'target']
-        if config.n_splits > 1:
+        if this_config.n_splits > 1:
             train, test = list(self.k_fold.split(X))[self.fold]
         else:
-            train, test = train_test_split(list(range(X.shape[0])), test_size=config.test_size)
+            train, test = train_test_split(list(range(X.shape[0])), test_size=this_config.test_size)
         X_train = X.iloc[train, :]
         y_train = y.iloc[train]
         X_test = X.iloc[test, :]
@@ -94,7 +108,8 @@ class Train(FlowSpec):
 
     @step
     def end_foreach_fold(self, inputs):
-        common.install_dependencies(config.dependencies)
+        this_config = debug_config if self.test_mode else config
+        common.install_dependencies(this_config.dependencies)
         self.merge_artifacts(inputs, exclude=['fold', 'score', 'iterations'])
         self.contender_results = {
             'scores': [ii.score for ii in inputs],
@@ -109,7 +124,8 @@ class Train(FlowSpec):
 
     @step
     def end_foreach_contender(self, inputs):
-        common.install_dependencies(config.dependencies)
+        this_config = debug_config if self.test_mode else config
+        common.install_dependencies(this_config.dependencies)
         self.merge_artifacts(inputs, exclude=['contender', 'contender_results'])
         self.contender_results = {
             pickle.dumps(ii.contender): ii.contender_results
@@ -119,7 +135,8 @@ class Train(FlowSpec):
 
     @step
     def train_test(self):
-        common.install_dependencies(config.dependencies)
+        this_config = debug_config if self.test_mode else config
+        common.install_dependencies(this_config.dependencies)
         self.best_contender_ser = max(self.contender_results.keys(), key=lambda k: self.contender_results[k]['mean_score'])
         self.best_contender = pickle.loads(self.best_contender_ser)
         print(f'best_contender {self.best_contender}, contender_results {self.contender_results[self.best_contender_ser]}')
@@ -158,7 +175,7 @@ class Train(FlowSpec):
             dir=f"results/{current.run_id}",
             y_true=y_test,
             y_pred=y_test_pred,
-            auto_open=config.auto_open_figures,
+            auto_open=this_config.auto_open_figures,
         )
         self.score = r2_score(y_test, y_test_pred)
         print(f'score {self.score}, contender {contender}')
@@ -167,7 +184,8 @@ class Train(FlowSpec):
 
     @step
     def train(self):
-        common.install_dependencies(config.dependencies)
+        this_config = debug_config if self.test_mode else config
+        common.install_dependencies(this_config.dependencies)
         contender = self.best_contender
         model_fit_kwargs = common.parse_contender_model_fit(contender)
 
@@ -194,6 +212,7 @@ class Train(FlowSpec):
 
     @step
     def end(self):
+        this_config = debug_config if self.test_mode else config
         indent = 4
         results_dir = f"results/{current.run_id}"
         Path(results_dir).mkdir(parents=True, exist_ok=True)
@@ -212,7 +231,7 @@ class Train(FlowSpec):
         common.plot_all_scores(
             contender_results=self.contender_results,
             dir=results_dir,
-            auto_open=config.auto_open_figures,
+            auto_open=this_config.auto_open_figures,
         )
 
 

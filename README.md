@@ -6,6 +6,8 @@ Convenience utilities for common machine learning tasks on Metaflow
 ![Build](https://github.com/fwhigh/metaflow-helper/actions/workflows/python37.yml/badge.svg)
 ![Build](https://github.com/fwhigh/metaflow-helper/actions/workflows/python38.yml/badge.svg)
 
+![Build](https://github.com/fwhigh/metaflow-helper/actions/workflows/examples36.yml/badge.svg)
+
 ## Quickstart
 
 You can run the tournament immediately like this. 

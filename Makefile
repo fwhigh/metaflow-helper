@@ -31,3 +31,7 @@ test:
 	pip install -r test-requirements.txt
 	coverage run --omit 'venv/*' -m pytest
 	coverage html -i
+
+test_examples:
+	pip install -r example-requirements.txt
+	python examples/model-selection/train.py run --test_mode 1
