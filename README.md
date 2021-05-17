@@ -10,8 +10,9 @@ Convenience utilities for common machine learning tasks on Metaflow
 
 ## Quickstart
 
-You can run the tournament immediately like this. 
-First, install a convenience package I'm calling `metaflow-helper`.
+You can run the model selection tournament immediately like this. 
+Install a convenience package called metaflow-helper.
+
 
 ```bash
 git clone https://github.com/fwhigh/metaflow-helper.git
@@ -19,19 +20,18 @@ cd metaflow-helper
 python -m pip install .
 ```
 
-Second, run the Metaflow tournament job. 
-This one needs a few more packages, including Metaflow itself, 
-which `metaflow-helper` doesn't currently require.
+Then run a Metaflow example. 
+Examples need a few more packages, including Metaflow itself, which metaflow-helper doesn’t currently require.
 
 ```bash
 python -m pip install -r example-requirements.txt
 python examples/model-selection/train.py run
 ```
 
-Visualize the flow.
+You can visualize the example flow.
 
 ```bash
-python examples/model-selection/train.py output-dot | dot -Grankdir=TB -Tpng -o flow.pngflow.png
+python examples/model-selection/train.py output-dot | dot -Grankdir=TB -Tpng -o model-selection-flow.png
 ```
 
 ## Release procedure
