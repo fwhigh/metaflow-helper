@@ -9,6 +9,8 @@ help:
 
 clean:
 	rm -rf dist build *.egg-info .pytest_cache htmlcov
+	find . -not -path "./venv/*" -name 'results' -type d | xargs rm -rf
+	find . -not -path "./venv/*" -name '.metaflow' -type d | xargs rm -rf
 
 dev:
 	pip install --upgrade pip

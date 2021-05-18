@@ -22,7 +22,7 @@ class Train(FlowSpec):
         'configuration',
         help="Which config.py file to use",
         type=str,
-        default='grid_config',
+        default='randomized_config',
     )
 
     @step
