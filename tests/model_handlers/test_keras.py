@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import r2_score
-from metaflow_helper.model_handlers import KerasRegressorHandler, build_keras_regression_model
+from metaflow_helper.models import KerasRegressor
 from metaflow_helper.constants import RunMode
 
 
@@ -11,8 +11,8 @@ def test_keras_model_regressor_handler_train():
     X = np.repeat(np.arange(n_examples).astype(float)/n_examples, n_repeat)[:, None]
     y = np.repeat(np.arange(n_examples).astype(float)/n_examples + offset, n_repeat)
 
-    model_handler = KerasRegressorHandler(
-        build_model='metaflow_helper.model_handlers.build_keras_regression_model',
+    model_handler = KerasRegressor(
+        build_model='metaflow_helper.models.build_keras_regression_model',
         mode=RunMode.TRAIN,
         input_dim=1,
         dense_layer_widths=(),
@@ -31,8 +31,8 @@ def test_keras_model_regressor_handler_test():
     X = np.repeat(np.arange(n_examples).astype(float)/n_examples, n_repeat)[:, None]
     y = np.repeat(np.arange(n_examples).astype(float)/n_examples + offset, n_repeat)
 
-    model_handler = KerasRegressorHandler(
-        build_model='metaflow_helper.model_handlers.build_keras_regression_model',
+    model_handler = KerasRegressor(
+        build_model='metaflow_helper.models.build_keras_regression_model',
         mode=RunMode.TEST,
         input_dim=1,
         dense_layer_widths=(),

@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import r2_score
-from metaflow_helper.model_handlers import LightGBMRegressorHandler
+from metaflow_helper.models import LightGBMRegressor
 from metaflow_helper.constants import RunMode
 
 
@@ -11,7 +11,7 @@ def test_lightgbm_model_regressor_handler_train():
     X = np.repeat(np.arange(n_examples), n_repeat)[:, None]
     y = np.repeat(np.arange(n_examples).astype(float) + offset, n_repeat)
 
-    model_handler = LightGBMRegressorHandler(
+    model_handler = LightGBMRegressor(
         mode=RunMode.TRAIN,
         max_depth=1,
         min_child_samples=1,
@@ -30,7 +30,7 @@ def test_lightgbm_model_regressor_handler_test():
     X = np.repeat(np.arange(n_examples), n_repeat)[:, None]
     y = np.repeat(np.arange(n_examples).astype(float) + offset, n_repeat)
 
-    model_handler = LightGBMRegressorHandler(
+    model_handler = LightGBMRegressor(
         mode=RunMode.TEST,
         max_depth=1,
         min_child_samples=1,

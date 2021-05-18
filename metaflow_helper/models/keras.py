@@ -1,15 +1,46 @@
+import tempfile
 from sklearn.base import BaseEstimator, RegressorMixin
 from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Dense, Dropout, InputLayer
 from tensorflow.python.keras import regularizers
+from tensorflow.python.keras import models as keras_models
 
 from ..constants import RunMode
-from .base import BaseModelHandler
+from .base import BaseModel
 from ..utils import import_object_from_string
 
 
-class KerasRegressorHandler(BaseModelHandler, BaseEstimator, RegressorMixin):
+def make_keras_picklable():
+    """
+    Pure magic from http://zachmoshe.com/2017/04/03/pickling-keras-models.html.
+
+    https://stackoverflow.com/questions/48295661/how-to-pickle-keras-model
+    """
+    def __getstate__(self):
+        model_str = ""
+        with tempfile.NamedTemporaryFile(suffix='.hdf5', delete=True) as fd:
+            keras_models.save_model(self, fd.name, overwrite=True)
+            model_str = fd.read()
+        d = {'model_str': model_str}
+        return d
+
+    def __setstate__(self, state):
+        with tempfile.NamedTemporaryFile(suffix='.hdf5', delete=True) as fd:
+            fd.write(state['model_str'])
+            fd.flush()
+            model = keras_models.load_model(fd.name)
+        self.__dict__ = model.__dict__
+
+    cls = keras_models.Model
+    cls.__getstate__ = __getstate__
+    cls.__setstate__ = __setstate__
+
+
+make_keras_picklable()
+
+
+class KerasRegressor(BaseModel, BaseEstimator, RegressorMixin):
 
     def __init__(self, build_model=None, input_dim=None, mode=RunMode, iterations=None, eval_metric=None, **kwargs):
         self.build_model = build_model
@@ -69,33 +100,28 @@ class KerasRegressorHandler(BaseModelHandler, BaseEstimator, RegressorMixin):
 def build_keras_regression_model(input_dim=None, dense_layer_widths=(10,), dropout_probabilities=(0,),
                                  metric='mse', optimizer='adam', loss='mean_squared_error', activation=None,
                                  kernel_initializer='random_normal', bias_initializer='random_normal',
-                                 l1_lambdas=(0,), l2_lambdas=(0,),
-                                 l1_lambda_final=0, l2_lambda_final=0):
+                                 l1_factor=0, l2_factor=0):
     if input_dim is None:
         raise ValueError(input_dim)
     if len(dense_layer_widths) > len(dropout_probabilities):
         dropout_probabilities = tuple([dropout_probabilities[0]]*len(dense_layer_widths))
-    if len(dense_layer_widths) > len(l1_lambdas):
-        dropout_probabilities = tuple([l1_lambdas[0]]*len(dense_layer_widths))
-    if len(dense_layer_widths) > len(l2_lambdas):
-        dropout_probabilities = tuple([l2_lambdas[0]]*len(dense_layer_widths))
     model = Sequential()
     model.add(InputLayer(input_shape=(input_dim, )))
-    for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities, l1_lambdas, l2_lambdas)):
-        dense_layer_width, dropout_probability, l1_lambda, l2_lambda = params
+    for i, params in enumerate(zip(dense_layer_widths, dropout_probabilities)):
+        dense_layer_width, dropout_probability = params
         model.add(Dense(
             dense_layer_width, activation=activation, kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer,
-            kernel_regularizer=regularizers.l1_l2(l1=l1_lambda, l2=l2_lambda),
-            bias_regularizer=regularizers.l2(l2_lambda),
-            activity_regularizer=regularizers.l2(l2_lambda)
+            kernel_regularizer=regularizers.l1_l2(l1=l1_factor, l2=l2_factor),
+            bias_regularizer=regularizers.l2(l2_factor),
+            activity_regularizer=regularizers.l2(l2_factor)
         ))
         model.add(Dropout(dropout_probability))
     model.add(Dense(
         1, activation=activation, kernel_initializer=kernel_initializer,
-        kernel_regularizer=regularizers.l1_l2(l1=l1_lambda_final, l2=l2_lambda_final),
-        bias_regularizer=regularizers.l2(l2_lambda_final),
-        activity_regularizer=regularizers.l2(l2_lambda_final)
+        kernel_regularizer=regularizers.l1_l2(l1=l1_factor, l2=l2_factor),
+        bias_regularizer=regularizers.l2(l2_factor),
+        activity_regularizer=regularizers.l2(l2_factor)
     ))
     model.compile(loss=loss, optimizer=optimizer, metrics=[metric])
     return model

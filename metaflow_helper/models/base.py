@@ -1,4 +1,4 @@
-class BaseModelHandler:
+class BaseModel:
     def __init__(self):
         pass
 

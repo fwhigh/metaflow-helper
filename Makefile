@@ -1,4 +1,4 @@
-.PHONY: help clean dev docs package test
+.PHONY: help clean dev example package test test_examples
 
 help:
 	@echo "This project assumes that an active Python virtualenv is present."
@@ -20,9 +20,6 @@ example:
 	pip install -r example-requirements.txt
 	jupyter labextension install jupyterlab-plotly
 
-# docs:
-# 	$(MAKE) -C docs html
-
 package:
 	pip install build
 	python -m build --sdist --wheel --outdir dist/ .
@@ -34,4 +31,4 @@ test:
 
 test_examples:
 	pip install -r example-requirements.txt
-	python examples/model-selection/train.py run --test_mode 1
+	python examples/model-selection/train.py run --configuration debug_randomized_config

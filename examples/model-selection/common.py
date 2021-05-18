@@ -2,31 +2,33 @@ import os, errno
 from importlib import import_module
 import subprocess
 import time
-import re
 from pathlib import Path
 import pickle
 import pandas as pd
 from sklearn.datasets import make_regression
+from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
 import plotly.graph_objects as go
 import plotly
 
-from metaflow_helper.constants import RunMode
+import grid_config
+import debug_grid_config
+import randomized_config
+import debug_randomized_config
 
 
 def silent_rm_file(filename):
     try:
         os.remove(filename)
-    except OSError as e: # this would be "except OSError, e:" before Python 2.6
-        if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
-            raise # re-raise exception if a different error occurred
+    except OSError as e:  # this would be "except OSError, e:" before Python 2.6
+        if e.errno != errno.ENOENT:  # errno.ENOENT = no such file or directory
+            raise  # re-raise exception if a different error occurred
 
 
 def system_command_with_retry(cmd: list):
     for i in range(0, 5):
-        wait_seconds = 2**i
+        wait_seconds = 2 ** i
         try:
             status = subprocess.run(cmd)
             if status.returncode != 0:
@@ -70,8 +72,8 @@ def generate_data(init_kwargs, n_numeric_features):
     return df_all, numeric_features, categorical_features
 
 
-def build_preprocessor_pipeline(numeric_features,
-                                categorical_features,
+def build_preprocessor_pipeline(numeric_features=None,
+                                categorical_features=None,
                                 step_name='preprocessor'):
     categorical_transformer = OneHotEncoder(handle_unknown='ignore')
     preprocessor = ColumnTransformer(
@@ -90,32 +92,6 @@ def build_model_pipeline(model, step_name='model'):
     return Pipeline([(step_name, model)])
 
 
-def parse_contender_model_init(contender):
-    return parse_contender(contender, prefix_filter='__init_kwargs__model__', prefix_to_remove='__init_kwargs__model__')
-
-
-def parse_contender_model_fit(contender):
-    return parse_contender(contender, prefix_filter='__fit_kwargs__model__', prefix_to_remove='__fit_kwargs__')
-
-
-def parse_contender(contender, prefix_filter, prefix_to_remove):
-    return {re.sub(r'^' + re.escape(prefix_to_remove), '', k): v for k, v in contender.items() if k.startswith(prefix_filter)}
-
-
-def update_contender(contender, mode: RunMode, input_dim=None, best_iterations=None):
-    if mode is RunMode.TEST:
-        pass
-    elif mode is RunMode.TRAIN:
-        contender.update({
-            '__init_kwargs__model__iterations': best_iterations,
-        })
-    contender.update({
-        '__init_kwargs__model__input_dim': input_dim,
-        '__init_kwargs__model__mode': mode,
-    })
-    return contender
-
-
 def plot_all_scores(contender_results, dir, auto_open=True):
     Path(dir).mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame().from_records([{
@@ -128,7 +104,7 @@ def plot_all_scores(contender_results, dir, auto_open=True):
         fig.add_trace(
             go.Box(
                 name=f"{row.name} {str(row['__model']).rsplit('.', 1)[1]}",
-                x=[f"{row.name}"]*len(row['scores']),
+                x=[f"{row.name}"] * len(row['scores']),
                 y=row['scores'],
             ),
         )
@@ -144,3 +120,17 @@ def plot_all_scores(contender_results, dir, auto_open=True):
     silent_rm_file(f"{dir}/all-scores.html")
     plotly.offline.plot(fig, filename=f"{dir}/all-scores.html", auto_open=auto_open)
     return fig
+
+
+def get_config(config_str: str):
+    if config_str == 'grid_config':
+        this_config = grid_config
+    elif config_str == 'debug_grid_config':
+        this_config = debug_grid_config
+    elif config_str == 'randomized_config':
+        this_config = randomized_config
+    elif config_str == 'debug_randomized_config':
+        this_config = debug_randomized_config
+    else:
+        raise ValueError(config_str)
+    return this_config

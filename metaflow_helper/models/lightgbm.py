@@ -2,10 +2,10 @@ import lightgbm as lgb
 from sklearn.base import BaseEstimator, RegressorMixin
 
 from ..constants import RunMode
-from .base import BaseModelHandler
+from .base import BaseModel
 
 
-class LightGBMRegressorHandler(BaseModelHandler, BaseEstimator, RegressorMixin):
+class LightGBMRegressor(BaseModel, BaseEstimator, RegressorMixin):
 
     def __init__(self, mode: RunMode, iterations=None, input_dim=None, **kwargs):
         self.mode = mode
