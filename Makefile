@@ -33,4 +33,4 @@ test:
 
 test_examples:
 	pip install -r example-requirements.txt
-	python examples/model-selection/train.py run --configuration debug_randomized_config
+	python examples/model-selection/train.py run --configuration test_randomized_config

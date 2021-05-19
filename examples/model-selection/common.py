@@ -13,9 +13,9 @@ import plotly.graph_objects as go
 import plotly
 
 import grid_config
-import debug_grid_config
+import test_grid_config
 import randomized_config
-import debug_randomized_config
+import test_randomized_config
 
 
 def silent_rm_file(filename):
@@ -125,12 +125,12 @@ def plot_all_scores(contender_results, dir, auto_open=True):
 def get_config(config_str: str):
     if config_str == 'grid_config':
         this_config = grid_config
-    elif config_str == 'debug_grid_config':
-        this_config = debug_grid_config
+    elif config_str == 'test_grid_config':
+        this_config = test_grid_config
     elif config_str == 'randomized_config':
         this_config = randomized_config
-    elif config_str == 'debug_randomized_config':
-        this_config = debug_randomized_config
+    elif config_str == 'test_randomized_config':
+        this_config = test_randomized_config
     else:
         raise ValueError(config_str)
     return this_config
