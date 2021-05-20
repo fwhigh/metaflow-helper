@@ -22,7 +22,7 @@ class Train(FlowSpec):
         'configuration',
         help="Which config.py file to use",
         type=str,
-        default='randomized_config',
+        default='config',
     )
 
     @step
@@ -30,12 +30,14 @@ class Train(FlowSpec):
         config = common.get_config(self.configuration)
         print(f'Running {config.__name__}')
         install_dependencies(config.dependencies)
-        self.df, self.numeric_features, self.categorical_features = common.generate_data(
-            n_numeric_features=config.n_numeric_features,
-            init_kwargs=config.make_regression_init_kwargs,
-        )
-        self.make_regression_init_kwargs = config.make_regression_init_kwargs
-        print(f'generated {len(self.df)} rows and {len(self.df.columns)} columns')
+        generate_data_run = common.get_generate_data_run()
+        self.df = generate_data_run.data.train_df
+        self.numeric_features = generate_data_run.data.numeric_features
+        self.categorical_features = generate_data_run.data.categorical_features
+        self.make_regression_init_kwargs = generate_data_run.data.make_regression_init_kwargs
+        if len(self.df) == 0:
+            raise ValueError(self.df)
+        print(f'training data contains {len(self.df)} rows and {len(self.df.columns)} columns')
 
         self.train_validation_index, self.test_index = train_test_split(
             self.df.index, test_size=config.test_size,

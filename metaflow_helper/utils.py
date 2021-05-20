@@ -1,5 +1,10 @@
-from typing import Union
+import errno
+import os
+import subprocess
+import time
 from importlib import import_module
+from typing import Union
+
 from sklearn.model_selection import ParameterGrid, ParameterSampler
 
 
@@ -29,3 +34,36 @@ def _explode_parameter_single_dict(p: dict):
     else:
         result = ParameterGrid(p)
     return result
+
+
+def silent_rm_file(filename):
+    try:
+        os.remove(filename)
+    except OSError as e:  # this would be "except OSError, e:" before Python 2.6
+        if e.errno != errno.ENOENT:  # errno.ENOENT = no such file or directory
+            raise  # re-raise exception if a different error occurred
+
+
+def system_command_with_retry(cmd: list):
+    for i in range(0, 5):
+        wait_seconds = 2 ** i
+        try:
+            status = subprocess.run(cmd)
+            if status.returncode != 0:
+                print(f'command status was {status}, retrying after {wait_seconds} seconds')
+                time.sleep(wait_seconds)
+                continue
+        except subprocess.CalledProcessError:
+            print(f'command failed, retrying after {wait_seconds} seconds')
+            time.sleep(wait_seconds)
+            continue
+        break
+
+
+def install_dependencies(dependencies: list):
+    for dependency in dependencies:
+        for k, v in dependency.items():
+            try:
+                module_ = import_module(k)
+            except ModuleNotFoundError:
+                system_command_with_retry(['pip', 'install', v])
