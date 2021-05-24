@@ -20,7 +20,7 @@ class Train(FlowSpec):
 
     configuration = Parameter(
         'configuration',
-        help="Which config.py file to use",
+        help="Which config.py file to use. Available configs: randomized_config (default), test_randomized_config, grid_config, test_grid_config",
         type=str,
         default='randomized_config',
     )
