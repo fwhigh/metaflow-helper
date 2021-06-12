@@ -3,8 +3,8 @@ from sklearn.pipeline import Pipeline
 
 
 class FeatureEngineer:
-    def __init__(self, pipeline_fn: Callable, **kwargs):
-        self.pipeline: Pipeline = pipeline_fn(**kwargs)
+    def __init__(self, pipeline_fn: Callable[..., Pipeline], **kwargs):
+        self.pipeline = pipeline_fn(**kwargs)
         if not isinstance(self.pipeline, Pipeline):
             raise ValueError(f'pipeline_fn must return an instance of sklearn.pipeline.Pipeline, was {type(self.pipeline)}')
 
